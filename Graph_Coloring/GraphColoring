@@ -1,0 +1,119 @@
+import numpy as np
+import random
+import datetime
+
+#Written by Sebastian Cave
+#Used to make training data for NN_GraphColoring.py
+#Solving using the Welsch Powell graph coloring algorithm
+#12/11/2020
+
+class Node(object):
+	def __init__(self, num):
+		self.identity = num
+		self.neighbors = []
+		self.degree = 0
+		self.color = -1
+		self.colored = False
+
+	def color(self, color):
+		self.color = color
+
+	def setNeighbor(self, node):
+		self.neighbors.append(node)
+		node.neighbors.append(self)
+		self.degree += 1
+		node.degree += 1
+
+class Graph(object):
+	def __init__(self, N):
+		print("Constructing Nodes...")
+		self.nodes = []
+		self.sorted_nodes = []
+		for i in range(0, N):
+			node = Node(i+1)
+			self.nodes.append(node)
+		print("Connecting Nodes...")
+		temp_conn = []
+		for node in self.nodes:
+			if len(temp_conn) == 0:
+				temp_conn.append(node)
+			else:
+				node.setNeighbor(random.choice(temp_conn))
+				temp_conn.append(node)
+
+		print("Checking Graph for Connectivity...") #TODO: IMPLEMENT
+
+	def DFS(self, node): #TODO: IMPLEMENT
+		return None
+
+	def welsch_powell(self):
+		for i in range(0, len(self.nodes)):
+			max_degree = 0
+			max_node = None
+			for node in self.nodes:
+				if node.degree > max_degree and node not in self.sorted_nodes:
+					max_degree = node.degree
+					max_node = node
+			self.sorted_nodes.append(max_node)
+
+		color_count = 1
+		for node in self.sorted_nodes:
+			if node.color == -1:
+				visited = [node]
+				node.color = color_count
+				for other in self.sorted_nodes:
+					if list(set(visited) & set(other.neighbors)) == [] and node != other:
+						other.color = color_count
+						visited.append(other)
+				color_count += 1
+
+	def check_solution(self): #TODO: IMPLEMENT
+		return None
+
+	def printgraph(self):
+		for node in self.nodes:
+			print (str(node.identity) + ", Color: " + str(node.color))
+			print_list = []
+			for neighbor in node.neighbors:
+				print_list.append(neighbor.identity)
+			print print_list
+		print("---------------")
+		for node in self.sorted_nodes:
+			print(str(node.identity) + ", " + str(node.degree))
+		print("---------------")
+
+	def export(self):
+		outF.write("[[")
+		for node in self.nodes:
+			for other in self.nodes:
+				if other in node.neighbors:
+					outF.write("1")
+				else:
+					outF.write("0")
+
+		outF.write("], [")
+		for node in self.nodes:
+			if node.color == 1:
+				outF.write("00")
+			if node.color == 2:
+				outF.write("10")
+			if node.color == 3:
+				outF.write("01")
+			if node.color == 4:
+				ourF.write("11")
+		outF.write("]]")
+		outF.write("\n")
+
+time = datetime.datetime.now()
+print ("Setting Seed to: " + str(time.microsecond))
+random.seed(time.microsecond)
+print("Initializing file location")
+outF = open("training_data.txt", "w")
+
+for i in range(0, 1000):
+	graph = Graph(8)
+	graph.welsch_powell()
+	graph.printgraph()
+	graph.export()
+
+#np.random.randint(1, N, np.random.randint(1,4))
